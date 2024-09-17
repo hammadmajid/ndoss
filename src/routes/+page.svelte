@@ -6,6 +6,7 @@
   import * as Form from "$lib/components/ui/form/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as Table from "$lib/components/ui/table";
+  import * as Accordion from "$lib/components/ui/accordion";
 
   import { createWorker } from "tesseract.js";
 
@@ -15,6 +16,7 @@
       .refine((f) => f.size < 5_000_000, "Max 5 MB upload size."),
   });
 
+  let rawScannedText: string;
   let regNumbers: number[];
 
   const form = superForm(defaults(zod(schema)), {
@@ -27,7 +29,9 @@
         data: { text },
       } = await worker.recognize(form.data.file);
 
-      regNumbers = text
+      rawScannedText = text;
+
+      regNumbers = rawScannedText
         .split("\n")
         .map((x) => Number(x))
         .sort((a, b) => a - b);
@@ -91,8 +95,16 @@
     </div>
   </form>
 
-  <div class="text-center">
+  <div class="text-center space-y-4">
     {#if regNumbers}
+      <Accordion.Root>
+        <Accordion.Item value="item-1">
+          <Accordion.Trigger>Show raw scanned text</Accordion.Trigger>
+          <Accordion.Content>
+            {rawScannedText}
+          </Accordion.Content>
+        </Accordion.Item>
+      </Accordion.Root>
       <Table.Root>
         <Table.Header>
           <Table.Row>
