@@ -5,6 +5,7 @@
 
   import * as Form from "$lib/components/ui/form/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
+  import * as Table from "$lib/components/ui/table";
 
   import { createWorker } from "tesseract.js";
 
@@ -14,7 +15,7 @@
       .refine((f) => f.size < 5_000_000, "Max 5 MB upload size."),
   });
 
-  let textData: string;
+  let regNumbers: number[];
 
   const form = superForm(defaults(zod(schema)), {
     SPA: true,
@@ -26,7 +27,10 @@
         data: { text },
       } = await worker.recognize(form.data.file);
 
-      textData = text;
+      regNumbers = text
+        .split("\n")
+        .map((x) => Number(x))
+        .sort((a, b) => a - b);
 
       worker.terminate();
     },
@@ -87,9 +91,28 @@
     </div>
   </form>
 
-  <div>
-    {#if textData}
-      {textData}
+  <div class="text-center">
+    {#if regNumbers}
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.Head class="w-[100px] text-center"
+              >Registration number</Table.Head
+            >
+            <Table.Head class="w-[100px] text-center">Student's name</Table.Head
+            >
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each regNumbers as number}
+            <Table.Row>
+              <Table.Cell>{number}</Table.Cell>
+              <!-- TODO: map each registration number to name -->
+              <Table.Cell>Unknown</Table.Cell>
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
     {/if}
   </div>
 </main>
