@@ -6,22 +6,33 @@
   import * as Form from "$lib/components/ui/form/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
 
+  import { onMount } from "svelte";
+  import { createWorker, type Worker } from "tesseract.js";
+
+  let worker: Worker;
+  onMount(async () => {
+    worker = await createWorker("eng");
+  });
+
   export const schema = z.object({
     file: z
       .instanceof(File, { message: "Please upload a file." })
       .refine((f) => f.size < 5_000_000, "Max 5 MB upload size."),
   });
 
+  let textData: string;
+
   const form = superForm(defaults(zod(schema)), {
     SPA: true,
     validators: zodClient(schema),
-    onUpdate({ form }) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        console.log(e.target?.result as string);
-      };
+    async onUpdate({ form }) {
+      const {
+        data: { text },
+      } = await worker.recognize(form.data.file);
 
-      reader.readAsText(form.data.file);
+      textData = text;
+
+      worker.terminate();
     },
   });
 
@@ -65,4 +76,10 @@
       <Form.Button disabled={$delayed} class="w-full">Submit</Form.Button>
     </div>
   </form>
+
+  <div>
+    {#if textData}
+      {textData}
+    {/if}
+  </div>
 </main>
