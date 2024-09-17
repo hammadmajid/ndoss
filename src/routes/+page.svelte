@@ -73,7 +73,20 @@
         <Form.FieldErrors />
       </Form.Field>
 
-      <Form.Button disabled={$delayed} class="w-full">Submit</Form.Button>
+      <Form.Button disabled={$delayed} class="w-full">
+        <span class="flex items-center justify-center gap-2">
+          {#if $delayed}
+            Loading
+            <img
+              src="/spinner.svg"
+              alt="Loading spinner"
+              class="inline animate-spin w-4"
+            />
+          {:else}
+            Submit
+          {/if}
+        </span>
+      </Form.Button>
     </div>
   </form>
 
