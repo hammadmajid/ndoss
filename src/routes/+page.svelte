@@ -6,13 +6,7 @@
   import * as Form from "$lib/components/ui/form/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
 
-  import { onMount } from "svelte";
-  import { createWorker, type Worker } from "tesseract.js";
-
-  let worker: Worker;
-  onMount(async () => {
-    worker = await createWorker("eng");
-  });
+  import { createWorker } from "tesseract.js";
 
   export const schema = z.object({
     file: z
@@ -26,6 +20,8 @@
     SPA: true,
     validators: zodClient(schema),
     async onUpdate({ form }) {
+      let worker = await createWorker("eng");
+
       const {
         data: { text },
       } = await worker.recognize(form.data.file);
@@ -67,6 +63,7 @@
             {...attrs}
             type="file"
             accept="image/*"
+            disabled={$delayed}
             on:input={(e) => ($formData.file = e.currentTarget.files?.item(0))}
           />
         </Form.Control>
